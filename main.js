@@ -626,25 +626,43 @@ function initConfig() {
     ev.initEvent(type, true, true);
     elem.dispatchEvent(ev);
   }
-  ['slider_font_size',
-    'slider_opacity',
-    'slider_text_shadow_stroke',
-    'slider_text_stroke',
-    'slider_line_height',
-    'slider_letter_spacing',
-    'selector_text_color',
-    'selector_text_shadow_color',
-    'selector_text_stroke_color',
-    'slider_text_bg_opacity',
-    'selector_text_bg_color',
-    'selector_video_bg',
-  ].forEach(id => {
-    if (typeof config[id] !== 'undefined') {
-      const el = document.getElementById(id);
-      el.value = config[id];
-      triggerEvent('input', el);
+
+  Array.prototype.forEach.call(
+    document.getElementsByClassName('control_input'),
+    (el) => {
+      if (typeof el.id == 'undefined') { return;}
+      if(el.tagName === 'INPUT'){
+        if(el.type === 'checkbox'){
+          //input type=checkboxに対する処理
+          if (typeof config[el.id] !== 'undefined') {
+            el.checked = config[el.id];
+            triggerEvent('input', el);
+          }
+          el.addEventListener('input', function (e) {
+            updateConfig(e.target.id, e.target.checked);
+          });
+        }else if(el.type === 'range' || el.type === 'color'){
+          //input type=rangeとtype=colorに対する処理
+          if (typeof config[el.id] !== 'undefined') {
+            el.value = config[el.id];
+            triggerEvent('input', el);
+          }
+          el.addEventListener('input', function (e) {
+            updateConfig(e.target.id, e.target.value);
+          });
+        }
+      }else if(el.tagName === 'SELECT'){
+        if (typeof config[el.id] !== 'undefined') {
+          selectValueIfExists(el, config[el.id]);
+          triggerEvent('change', el);
+        }
+        el.addEventListener('change', function (e) {
+          updateConfig(e.target.id, e.target.value)
+        });
+      }
     }
-  });
+  );
+
   ['video_bg',
     'result_video',
     'text_overlay_wrapper',
@@ -663,46 +681,17 @@ function initConfig() {
       }
     }
   });
+
+
   if (typeof config.position !== 'undefined') {
     const el = document.getElementById(config.position);
     el.checked = 'checked';
     triggerEvent('input', el);
   }
-  if (typeof config.select_font !== 'undefined') {
-    select_font.selectedIndex = config.select_font;
-    triggerEvent('change', select_font);
-  }
-  if (typeof config.checkbox_timestamp !== 'undefined') {
-    const el = document.getElementById('checkbox_timestamp');
-    el.checked = config.checkbox_timestamp;
-    triggerEvent('input', el);
-  }
-  if (typeof config.checkbox_hiragana !== 'undefined') {
-    const el = document.getElementById('checkbox_hiragana');
-    el.checked = config.checkbox_hiragana;
-    triggerEvent('input', el);
-  }
-  if (typeof config.select_autoclear_text !== 'undefined') {
-    const el = document.getElementById('select_autoclear_text');
-    selectValueIfExists(el, config.select_autoclear_text);
-    triggerEvent('change', el);
-  }
 
-  document.querySelectorAll('input.control_input').forEach(
-    el => el.addEventListener('input', updateConfigValue)
-  );
   document.querySelectorAll('input[name="selector_position"]').forEach(
     el => el.addEventListener('input', ev => updateConfig('position', el.id))
   );
-  document.querySelector('#select_camera').addEventListener('change', updateConfigValue);
-  document.querySelector('#select_font').addEventListener('change', updateConfigValue);
-  document.querySelector('#checkbox_timestamp').addEventListener('input', function(e) {
-    updateConfig(e.target.id, e.target.checked)
-  });
-  document.querySelector('#checkbox_hiragana').addEventListener('input', function(e) {
-    updateConfig(e.target.id, e.target.checked)
-  });
-  document.querySelector('#select_autoclear_text').addEventListener('change', updateConfigValue);
 }
 
 function updateConfig(key, value) {
