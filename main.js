@@ -39,6 +39,18 @@ const getCookie = function(key){
   }
 }
 
+const getCurrentTimestamp = function(){
+  var now = new window.Date();
+  var Year = now.getFullYear();
+  var Month = (("0" + (now.getMonth() + 1)).slice(-2));
+  var Date = ("0" + now.getDate()).slice(-2);
+  var Hour = ("0" + now.getHours()).slice(-2);
+  var Min = ("0" + now.getMinutes()).slice(-2);
+  var Sec = ("0" + now.getSeconds()).slice(-2);
+
+  return Year + '-' + Month + '-' + Date + ' ' + Hour + ':' + Min + ':' + Sec + '&#009;'
+}
+
 // Webカメラ
 // 参考: https://qiita.com/qiita_mona/items/e58943cf74c40678050a
 // getUserMedia が使えないとき
@@ -213,18 +225,16 @@ function vr_function() {
 
         if (document.getElementById('checkbox_timestamp').checked) {
           // タイムスタンプ機能
-          var now = new window.Date();
-          var Year = now.getFullYear();
-          var Month = (("0" + (now.getMonth() + 1)).slice(-2));
-          var Date = ("0" + now.getDate()).slice(-2);
-          var Hour = ("0" + now.getHours()).slice(-2);
-          var Min = ("0" + now.getMinutes()).slice(-2);
-          var Sec = ("0" + now.getSeconds()).slice(-2);
-
-          var timestamp = Year + '-' + Month + '-' + Date + ' ' + Hour + ':' + Min + ':' + Sec + '&#009;'
+          var timestamp = getCurrentTimestamp();
           result_transcript = timestamp + result_transcript
         }
 
+        if(!getCookie('googtrans')){
+          readText(document.getElementById('result_text').textContent);
+        }else{
+          window.setTimeout(function(){readText(document.getElementById('result_text').textContent);}, 500);
+        }
+        
         document.getElementById('result_log').insertAdjacentHTML('beforeend', result_transcript + '\n');
         textAreaHeightSet(document.getElementById('result_log'));
         vr_function();
@@ -638,8 +648,192 @@ for (var i = 0; i < fonts_custom.length; i++) {
 // デフォルトの言語を設定
 select_font.selectedIndex = 0;
 
+//GCP text-to-speech用
+//参考：https://note.com/npaka/n/nf23247f5f8e4
+const audioStack = [];
+function gcpapi_speak(text) {
+  //再生をスタック
+  function audioPlay(audio){
+    if(audio){audioStack.push(audio);}
+    if(audioStack.length > 0){
+      if(audioStack[0].paused){
+        audioStack[0].play();
+        audioStack[0].addEventListener('ended', (event) => {
+          audioStack.shift();
+          setTimeoutForClearText();
+          if(audioStack.length > 0){
+            clearTimeoutForClearText();
+            audioPlay();
+          }
+        });
+      }
+    }
+  }
+
+  const volume = (document.getElementById('slider_speech_volume_gcp') && document.getElementById('slider_speech_volume_gcp').value) || 1;
+  const pitch = (document.getElementById('slider_speech_pitch_gcp') && document.getElementById('slider_speech_pitch_gcp').value) || 1;
+  const rate = (document.getElementById('slider_speech_rate_gcp') && document.getElementById('slider_speech_rate_gcp').value) || 1;
+  const voice = (document.getElementById('select_speech_voice_gcp') && document.getElementById('select_speech_voice_gcp').value) || "ja-JP-Standard-A";
+
+  const deviceSuffix = (document.getElementById('select_speech_device') && Number(document.getElementById('select_speech_device').value)) || 0;
+
+  //パラメータのリファレンス：https://cloud.google.com/text-to-speech/docs/reference/rest/v1/text/synthesize?hl=ja
+  //ボイスリスト：https://cloud.google.com/text-to-speech/docs/voices?hl=ja
+  const url = "https://texttospeech.googleapis.com/v1/text:synthesize?key=" + apiKey;
+  const data = {
+    "input": {
+      "text": text
+    },
+    "voice": {
+      "languageCode": "ja-JP",
+      "name": voice
+    },
+    "audioConfig": {
+      "audioEncoding": "MP3",
+      "speaking_rate": rate,
+      "pitch": pitch,
+      "volumeGainDb": volume
+    }
+  }
+
+  const otherparam={
+    headers: {
+      "content-type": "application/json; charset=UTF-8"
+    },
+    body: JSON.stringify(data),
+    method: "POST"
+  }
+  fetch(url, otherparam)
+    .then(data=>{return data.json()})
+    .then(res=>{
+      try {
+        var blobUrl = base64ToBlobUrl(res.audioContent);
+        var audio = new Audio();
+        audio.src = blobUrl;
+        if(audioDevices.length > 0){audio.setSinkId(audioDevices[deviceSuffix].deviceId);}
+        audioPlay(audio);
+      } catch(e) {
+        console.log(e);
+      }
+    })
+    .catch(error=>alert(error))  
+}
+
+// Base64 → BlobUrl
+function base64ToBlobUrl(base64) {
+  var bin = atob(base64.replace(/^.*,/, ''))
+  var buffer = new Uint8Array(bin.length)
+  for (var i = 0; i < bin.length; i++ ) {
+    buffer[i] = bin.charCodeAt(i)
+  }
+  return window.URL.createObjectURL(new Blob([buffer.buffer], {type: "audio/wav"}))
+}
+
+//ブラウザのWeb Speech API 
+function browserapi_speak(text){
+  const volume = (document.getElementById('slider_speech_volume') && document.getElementById('slider_speech_volume').value) || 1;
+  const pitch = (document.getElementById('slider_speech_pitch') && document.getElementById('slider_speech_pitch').value) || 1;
+  const rate = (document.getElementById('slider_speech_rate') && document.getElementById('slider_speech_rate').value) || 1;
+  const langSuffix = (document.getElementById('select_speech_language') && document.getElementById('select_speech_language').value) || 0;
+  const voiceSuffix = (document.getElementById('select_speech_voice') && Number(document.getElementById('select_speech_voice').value)) || 0;
+
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.volume = volume;
+  utter.pitch = pitch;
+  utter.rate = rate;
+  utter.lang = langList[langSuffix];
+  utter.voice = langVoiceList[voiceSuffix];
+  console.log(utter);
+  window.speechSynthesis.speak(utter);
+
+  setTimeoutForClearText();
+}
+
+//
+function readTextTimer(textArr){
+  if(document.getElementById('checkbox_api').checked){
+    if(!apiKey){
+      alert("api_key.jsを設置して、GCPのapi_keyを定義してください。");
+      return false;
+    }
+  }
+
+  document.getElementById('result_text').innerHTML="";
+
+  for(let i=0; i < textArr.length; i+=2){
+    console.log(textArr[i],textArr[i+1])
+    let read_text_time = Number(textArr[i]) * 1000;
+    let read_text_part = textArr[i+1];
+    window.setTimeout(
+      function(text_part) {
+        document.getElementById('result_text').innerHTML = text_part.split('\n').join('<br>');
+        if(document.getElementById('checkbox_api').checked){
+          gcpapi_speak(text_part);
+        }else{
+          browserapi_speak(text_part);
+        }
+       }
+     , read_text_time, read_text_part
+    )
+  }
+}
+// テキストの読み上げ
+function readText(text){
+  if(text == "" || !document.getElementById('checkbox_voice').checked){
+    console.log("文章が設定されていないか、読み上げ設定がオフです。")
+    return false;
+  }
+
+  var readTextArr = text.split(/([0-9.]+)\|/);
+  if(readTextArr.shift() === "TIMER_READ_MODE:\n"){
+    readTextTimer(readTextArr);
+    return false;
+  }
+  
+  if(document.getElementById('checkbox_api').checked){
+    if(!apiKey){
+      alert("api_key.jsを設置して、GCPのapi_keyを定義してください。");
+      return false;
+    }
+    gcpapi_speak(text);
+  }else{
+    browserapi_speak(text)
+  }
+}
+
+// 手動テキスト読み上げ
+function manualReadText(text){
+  if(text == "" || !document.getElementById('checkbox_voice').checked){
+    console.log("文章が設定されていないか、読み上げ設定がオフです。")
+    return false;
+  }
+
+  var result_transcript = text;
+  
+  if (document.getElementById('checkbox_timestamp').checked) {
+    // タイムスタンプ機能
+    var timestamp = getCurrentTimestamp();
+    result_transcript = timestamp + text
+  }
+
+  if(!getCookie('googtrans')){
+    readText(text);
+  }else{
+    window.setTimeout(function(){readText(document.getElementById('result_text').textContent);}, 1000);
+  }
+
+  document.getElementById('result_log').insertAdjacentHTML('beforeend', result_transcript + '\n');
+  textAreaHeightSet(document.getElementById('result_log'));
+}
+
+
+
 // 初期設定
 const config = JSON.parse(localStorage.speech_to_text_config || '{}');
+var voiceList = [];
+var langList = [];
+var langVoiceList = [];
+var audioDevices = [];
 
 function initConfig() {
   function triggerEvent(type, elem) {
@@ -647,6 +841,59 @@ function initConfig() {
     ev.initEvent(type, true, true);
     elem.dispatchEvent(ev);
   }
+
+    //ボイスリスト取得
+    //参考：https://techblog.istyle.co.jp/archives/3924
+
+    window.speechSynthesis.onvoiceschanged = () => {
+      voiceList = window.speechSynthesis.getVoices();
+      updateVoiceList();
+    };
+
+    function updateVoiceList() {
+      langList = Array.from(new Set(voiceList.map(voice => voice.lang)));
+      for (var i = 0; i < langList.length; i++) {
+        document.getElementById('select_speech_language').options[i] = new Option(langList[i], i);
+      }
+
+      const select_speech_language = document.getElementById('select_speech_language');
+      select_speech_language.selectedIndex = 0;
+      if(config['select_speech_language']){select_speech_language.value = config['select_speech_language'];}
+
+      select_speech_language.addEventListener('change', function (e) {
+        updateConfig(e.target.id, e.target.value);
+        updateVoiceList();
+      });
+
+      langVoiceList = voiceList.filter(
+        d => {return d.lang == select_speech_language.options[select_speech_language.value].text;})
+
+      for (var i = 0; i < langVoiceList.length; i++) {
+        document.getElementById('select_speech_voice').options[i] = new Option(langVoiceList[i]["name"], i);
+      }
+      const select_speech_voice = document.getElementById('select_speech_voice');
+      select_speech_voice.selectedIndex = 0;
+      if(config['select_speech_voice']){select_speech_voice.value = config['select_speech_voice'];}
+
+      select_speech_voice.addEventListener('change', function (e) {
+        updateConfig(e.target.id, e.target.value);
+      });
+    }
+
+    //音の出力先リスト取得(GCP-APIを使うときのみ)
+    //参考：https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/setSinkId
+    navigator.mediaDevices.enumerateDevices().then(devices => {
+      audioDevices = devices.filter(device => device.kind === 'audiooutput');
+      for (var i = 0; i < audioDevices.length; i++) {
+        select_speech_device.options[i] = new Option(audioDevices[i]["label"], i);
+        select_speech_device.selectedIndex = 0;
+      }
+      ['select_speech_device'].forEach(v =>{
+        const el = document.getElementById(v);
+        if(config[v]){el.value = config[v];}
+        triggerEvent('change', el);
+      })
+    })
 
   Array.prototype.forEach.call(
     document.getElementsByClassName('control_input'),
@@ -792,6 +1039,24 @@ function katakanaToHiragana(src) {
   });
 }
 
+//スタイル一括変更
+function changeStyle(query, prop, value){
+  const targetElements = document.querySelectorAll(query);
+
+  for(let i = 0; i < targetElements.length; i++){
+    //displayはvalueがtrueかfalseかで制御
+    if(prop == 'display'){
+      if(value){
+        targetElements[i].style.display = '';
+      }else{
+        targetElements[i].style.display = 'none';
+      }
+      break;
+    }
+
+    targetElements[i].style[prop] = value;
+  }
+}
 
 //ポップアップウィンドウ表示　ここから
 let subWindow = null;

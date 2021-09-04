@@ -496,3 +496,26 @@ select {
 	padding: 0;
 }
 /* ポップアップウィンドウ設定用 ここまで */
+
+.control_voice_wrapper{
+	display: none;
+}
+#checkbox_voice:checked ~ .control_voice_wrapper {
+	display: flex;
+}
+
+#manual_speech_text {
+	box-sizing: border-box;
+	width: 960px;
+	background-color: #000;
+	font-family: 'Noto Sans JP', sans-serif;
+	font-size: 100%;
+	color: #AAA;
+}
+
+.annotation{
+	font-size: small;
+	color: #A0A0A0;
+	margin: 3px;
+	line-height: 100%;
+  }

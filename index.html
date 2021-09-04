@@ -41,6 +41,112 @@
       <input class="checkboxes control_input" id="checkbox_controls" type="checkbox" checked><label class="checkboxes_label">詳細設定を表示</label>
       <input class="checkboxes control_input" id="checkbox_log" type="checkbox" checked><label class="checkboxes_label">認識結果のログを表示</label>
       <div class="controls_wrapper control_wrapper_row">
+
+        <div class="col-12 control_wrapper_col" style="padding-top: 0.8rem;">
+          <div class="control_header">読み上げの設定：</div>
+          <input type="checkbox" class="control_input checkbox-input" id="checkbox_voice">
+          <label for="checkbox_voice" class="checkbox-label">読み上げのオン／オフ</label>
+
+          <input type="checkbox" class="control_input checkbox-input" id="checkbox_api" 
+          oninput="changeStyle('#speech_for_gcpAPI', 'display', this.checked),changeStyle('#speech_for_browserAPI', 'display', !(this.checked))">
+          <label for="checkbox_api" class="checkbox-label">GCP利用のオン／オフ</label>
+
+          <div class="control_voice_wrapper control_wrapper" id="speech_for_gcpAPI">
+            <div class="control_form control_form_slider col-3">
+              <label for="slider_speech_volume_gcp" class="control_label">音量</label>
+              <input id="slider_speech_volume_gcp" type="range" class="control_input form-control-range" value="0.0"
+                min="-10.0" max="10.0" step="0.5" oninput="document.getElementById('value_volume_gcp').innerHTML=this.value">
+              <div class="control_value">
+                <span id="value_volume_gcp">0.0</span>
+              </div>
+
+            </div>
+            <div class="control_form control_form_slider col-3">
+              <label for="slider_speech_pitch_gcp" class="control_label">ピッチ</label>
+              <input id="slider_speech_pitch_gcp" type="range" class="control_input form-control-range" value="-8.0"
+                min="-20.0" max="20.0" step="0.1" oninput="document.getElementById('value_speech_pitch_gcp').innerHTML=this.value">
+              <div class="control_value">
+                <span id="value_speech_pitch_gcp">-8.0</span>
+              </div>
+            </div>
+            <div class="control_form control_form_slider col-3">
+              <label for="slider_speech_rate_gcp" class="control_label">速度</label>
+              <input id="slider_speech_rate_gcp" type="range" class="control_input form-control-range" value="1.2"
+                min="0.25" max="4.0" step="0.05" oninput="document.getElementById('value_speech_rate_gcp').innerHTML=this.value">
+              <div class="control_value">
+                <span id="value_speech_rate_gcp">1.2</span>
+              </div>
+            </div>
+            <div class="control_form control_form_selector col-2">
+              <label for="select_speech_voice_gcp" class="control_label">声の種類</label>
+              <select id="select_speech_voice_gcp" class="control_input form-control">
+                <option value="ja-JP-Standard-A">ja-JP-Standard-A</option>
+                <option value="ja-JP-Standard-B" selected>ja-JP-Standard-B</option>
+                <option value="ja-JP-Standard-C">ja-JP-Standard-C</option>
+                <option value="ja-JP-Standard-D">ja-JP-Standard-D</option>
+                <option value="ja-JP-Wavenet-A">ja-JP-Wavenet-A</option>
+                <option value="ja-JP-Wavenet-B">ja-JP-Wavenet-B</option>
+                <option value="ja-JP-Wavenet-C">ja-JP-Wavenet-C</option>
+                <option value="ja-JP-Wavenet-D">ja-JP-Wavenet-D</option>
+              </select>
+            </div>
+            <div class="control_form control_form_selector col-3">
+              <label for="select_speech_device" class="control_label">出力先</label>
+              <select id="select_speech_device" class="control_input form-control" onchange=""></select>
+            </div>
+          </div>
+
+          <div class="control_voice_wrapper control_wrapper" id="speech_for_browserAPI">
+            <div class="control_form control_form_slider col-3">
+              <label for="slider_speech_volume" class="control_label">音量</label>
+                <input id="slider_speech_volume" type="range" class="control_input form-control-range" value="1" min="0"
+                  max="1" step="0.1" oninput="document.getElementById('value_speech_volume').innerHTML=this.value">
+                <div class="control_value">
+                  <span id="value_speech_volume">1</span>
+                </div>
+            </div>
+            <div class="control_form control_form_slider col-3">
+              <label for="slider_speech_pitch" class="control_label">ピッチ</label>
+              <input id="slider_speech_pitch" type="range" class="control_input form-control-range" value="1" min="0"
+                max="2" step="0.1" oninput="document.getElementById('value_speech_pitch').innerHTML=this.value">
+              <div class="control_value">
+                <span id="value_speech_pitch">1</span>
+              </div>
+            </div>
+            <div class="control_form control_form_slider col-3">
+              <label for="slider_speech_rate" class="control_label">速度</label>
+              <input id="slider_speech_rate" type="range" class="control_input form-control-range" value="1" min="0.1"
+                max="10" step="0.1" oninput="document.getElementById('value_speech_rate').innerHTML=this.value">
+              <div class="control_value">
+                <span id="value_speech_rate">1</span>
+              </div>
+            </div>
+            <div class="control_form control_form_selector col-4">
+              <label for="select_speech_language" class="control_label">言語</label>
+              <select id="select_speech_language" class="form-control" onchange=""></select>
+            </div>
+            <div class="control_form control_form_selector col-4">
+              <label for="select_speech_voice" class="control_label">声の種類</label>
+              <select id="select_speech_voice" class=" orm-control" onchange=""></select>
+            </div>
+          </div>
+
+          <div class="control_header">手動読み上げ：</div>
+          <div class=' control_wrapper'>
+              <textarea id='manual_speech_text' name="manual_speech_text" cols="80" class="form-control"
+                onkeydown="if(event.ctrlKey&&event.keyCode==13){document.getElementById('btn_manual_speech').click();return false};"></textarea>
+              <div class="input-group-append">
+                <input type="button" id="btn_manual_speech" class='btn btn-primary' value='読む'
+                onclick="displayResultText((document.getElementById('manual_speech_text').value).split('\n').join('<br>')),
+                  manualReadText(document.getElementById('manual_speech_text').value),
+                  document.getElementById('manual_speech_text').value=''">
+            </div>
+            <p class="annotation">「読む」ボタン or Ctrl+Enterでテキストエリアに入力した内容を読み上げます。<br>
+              入力した内容は読む度に削除されます。</p>
+          </div>
+        </div>
+
+
         <div class="col-12 control_wrapper_col">
           <div class="control_header">文字の調整</div>
           <div class="control_wrapper" style="padding-top: 0.8rem;">
@@ -254,6 +360,10 @@
   <script src="kuromoji/build/kuromoji.js" defer></script>
   <!-- Chrome で MediaDevices.enumerateDevices() を動かすためのpolyfill -->
   <script src="https://webrtc.github.io/adapter/adapter-latest.js" defer></script>
+
+  <!-- 
+    <script src="./api_key.js"></script>
+  -->
   <script src="./main.js" defer></script>
 </body>
 
