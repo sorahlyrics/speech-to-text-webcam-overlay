@@ -36,8 +36,6 @@ if (typeof navigator.mediaDevices.getUserMedia !== 'function') {
   throw err;
 }
 
-const $video = document.getElementById('result_video'); // 映像表示エリア
-
 // select要素のoptionをクリアする
 function clearSelect(select) {
   while (select.firstChild) {
@@ -86,8 +84,9 @@ function updateCameraSelector(deviceInfos) {
 // video要素にstreamを設定し、メディア（カメラ、マイク）一覧を返す
 // 参考：https://github.com/webrtc/samples/blob/gh-pages/src/content/devices/input-output/js/main.js
 function handleStream(stream) {
-  window.stream = stream;
-  $video.srcObject = stream;
+  const outputWindow = getActiveWindow();
+  outputWindow.stream = stream;
+  outputWindow.document.getElementById('result_video').srcObject = stream;
   return navigator.mediaDevices.enumerateDevices();
 }
 
@@ -194,9 +193,9 @@ function vr_function() {
         }
 
         if (document.getElementById('checkbox_hiragana').checked && lang == 'ja-JP') {
-          document.getElementById('result_text').innerHTML = resultToHiragana(result_transcript);
+          displayResultText(resultToHiragana(result_transcript));
         } else {
-          document.getElementById('result_text').innerHTML = result_transcript;
+          displayResultText(result_transcript);
         }
         setTimeoutForClearText();
 
@@ -222,9 +221,9 @@ function vr_function() {
         var result_transcript = results[i][0].transcript;
 
         if (document.getElementById('checkbox_hiragana').checked && lang == 'ja-JP') {
-          document.getElementById('result_text').innerHTML = resultToHiragana(result_transcript);
+          displayResultText(resultToHiragana(result_transcript));
         } else {
-          document.getElementById('result_text').innerHTML = result_transcript;
+          displayResultText(result_transcript);
         }
 
         flag_speech = 1;
@@ -236,6 +235,13 @@ function vr_function() {
   document.getElementById('status').innerHTML = "待機中";
   document.getElementById('status').className = "ready";
   recognition.start();
+}
+
+function displayResultText(text){
+  window.document.getElementById('result_text').innerHTML = text;
+  if(isOpenSubWindow() && subWindow.document.getElementById('result_text')){
+    subWindow.document.getElementById('result_text').innerHTML = text;
+  }
 }
 
 function updateTextClearSecond() {
@@ -262,7 +268,7 @@ function setTimeoutForClearText() {
   clearTimeoutForClearText();
   textUpdateTimeoutID = setTimeout(
     () => {
-      document.getElementById('result_text').innerHTML = "";
+      displayResultText("");
       textUpdateTimeoutID = 0;
     },
     textUpdateTimeoutSecond * 1000);
@@ -640,8 +646,9 @@ function initConfig() {
           }
           el.addEventListener('input', function (e) {
             updateConfig(e.target.id, e.target.checked);
+            popupSyncStyle();
           });
-        }else if(el.type === 'range' || el.type === 'color'){
+        }else if(el.type === 'range' || el.type === 'color'|| el.type === 'number'){
           //input type=rangeとtype=colorに対する処理
           if (typeof config[el.id] !== 'undefined') {
             el.value = config[el.id];
@@ -649,6 +656,7 @@ function initConfig() {
           }
           el.addEventListener('input', function (e) {
             updateConfig(e.target.id, e.target.value);
+            popupSyncStyle();
           });
         }
       }else if(el.tagName === 'SELECT'){
@@ -658,6 +666,7 @@ function initConfig() {
         }
         el.addEventListener('change', function (e) {
           updateConfig(e.target.id, e.target.value)
+          popupSyncStyle();
         });
       }
     }
@@ -690,7 +699,9 @@ function initConfig() {
   }
 
   document.querySelectorAll('input[name="selector_position"]').forEach(
-    el => el.addEventListener('input', ev => updateConfig('position', el.id))
+    el => el.addEventListener('input', ev => {
+      updateConfig('position', el.id);
+      popupSyncStyle()})
   );
 }
 
@@ -710,7 +721,8 @@ function updateConfigClass(key, value_key, value) {
 function toggleClass(id, className) {
   const el = document.getElementById(id);
   const value = el.classList.toggle(className);
-  updateConfigClass(id, className, value);
+  updateConfigClass(id, className, value)
+  popupSyncStyle();
 }
 
 function updateConfigValue() {
@@ -764,3 +776,102 @@ function katakanaToHiragana(src) {
     return String.fromCharCode(chr);
   });
 }
+
+
+//ポップアップウィンドウ表示　ここから
+let subWindow = null;
+
+//スマホ非対応
+if(isSmartPhone()){
+  document.getElementsByClassName('control_popup_wrapper')[0].style.display = 'none';
+}
+
+function isSmartPhone() {
+  if (navigator.userAgent.match(/iPhone|iPad|Android.+Mobile/)) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+//親ウィンドウが閉じるもしくは更新したら子ウィンドウも閉じる
+window.addEventListener('beforeunload', function (event) {
+  if(isOpenSubWindow()){
+    subWindow.close();
+  }
+})
+
+function isOpenSubWindow(){
+  if(!subWindow || subWindow.closed){
+    return false;
+  }else{
+    return true;
+  }
+}
+
+function getActiveWindow(){
+  if(!subWindow || subWindow.closed){
+    return window;
+  }else{
+    return subWindow;
+  }
+}
+
+//サブウィンドウにスタイルを同期
+function popupSyncStyle(){
+  if(!isOpenSubWindow()){ return false;}
+  ['result_video', 'video_bg', 'text_overlay_wrapper', 'text_bg', 'result_text'].forEach(
+    id => {
+      const parentEl = window.document.getElementById(id);
+      const childEl = subWindow.document.getElementById(id);
+      if(parentEl.style){
+        childEl.style.cssText = parentEl.style.cssText;
+      }
+      if(parentEl.className){
+        childEl.className = parentEl.className;
+      }
+    }
+  )
+}
+
+//サブウィンドウが閉じたことをチェックする
+function checkSubWindowClose(){
+  if(isOpenSubWindow()){ 
+    window.setTimeout(checkSubWindowClose(), 1000);
+  }else{
+    document.getElementById('button_subWindow').value = '開く';
+    document.getElementById('video_wrapper').style.opacity = 1;
+    setupCamera();
+  }
+}
+
+function windowPopup(subWindowX, subWindowY){
+  subWindowX = subWindowX ? parseInt(subWindowX) : 960, 
+  (subWindowX < 0 ) && (subWindowX = 960);
+
+  subWindowY = subWindowY ? parseInt(subWindowY) : 540, 
+  (subWindowY < 0 ) && (subWindowY = 540);
+
+  if(!isOpenSubWindow()){
+    subWindow = window.open("./popup.html", "sub", "width=" + subWindowX + ",height=" + subWindowY + ",scrollbars=no");
+    subWindow.openByOpener = true;
+    subWindow.onload = () => {
+      subWindow.onunload = () => {
+        window.setTimeout(checkSubWindowClose, 1000);
+      }
+      document.getElementById('button_subWindow').value = 'リサイズ';
+      document.getElementById('video_wrapper').style.opacity = 0;
+      subWindow.document.getElementById('result_text').innerHTML = window.document.getElementById('result_text').innerHTML;
+      
+      popupSyncStyle();
+      setupCamera();
+    }
+  }else{
+    subWindow.resizeTo(
+      subWindowX + (subWindow.outerWidth - subWindow.innerWidth), 
+      subWindowY + (subWindow.outerHeight - subWindow.innerHeight)
+      );
+    subWindow.focus();
+  }
+}
+//ポップアップウィンドウ表示　ここまで

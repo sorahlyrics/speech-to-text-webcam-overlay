@@ -208,7 +208,27 @@
           <a href="https://github.com/1heisuzuki/speech-to-text-webcam-overlay#自動で翻訳したい" target="_blank">[?]</a>:
           <div id="google_translate_element" class="select_translation selector"></div>
         </div>
+
+        <div class="control_popup_wrapper col-6 control_wrapper_col" style="padding-top: 0.8rem;">
+          <div class="control_header">表示領域のポップアップ：</div>
+          <div class="control_wrapper">
+            <div class="control_form control_form_text col-4">
+              <label for="input_popupWindowX" class="control_label">横幅</label>
+              <input type="number" id="input_popupWindowX" class="control_input" value="1280" step="1" min="1">
+              <p>px</p>
+            </div>
+            <div class="control_form control_form_text col-4">
+              <label for="input_popupWindowY" class="control_label">縦幅</label>
+              <input type="number" id="input_popupWindowY" class="control_input" value="720" step="1" min="1">
+              <p>px</p>
+            </div>
+            <div class="control_button_wrapper col-3">
+              <input type="button" value="開く" id="button_subWindow" onclick="windowPopup(document.getElementById('input_popupWindowX').value,document.getElementById('input_popupWindowY').value)"> 
+            </div> 
+          </div>
+        </div>
       </div>
+
       <div id="log" class="log_wrapper">
         <div class="control_header">認識結果のログ</div>
         <div class="log_control_wrapper help_text">
