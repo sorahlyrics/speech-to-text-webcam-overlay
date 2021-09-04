@@ -27,6 +27,18 @@ if (!isChrome) {
   exit;
 }
 
+const getCookie = function(key){
+  const cookieKV = document.cookie
+  .split('; ')
+  .find(row => row.startsWith(key));
+
+  if(cookieKV){
+    return cookieKV.split('=')[1];
+  }else{
+    return "";
+  }
+}
+
 // Webカメラ
 // 参考: https://qiita.com/qiita_mona/items/e58943cf74c40678050a
 // getUserMedia が使えないとき
@@ -220,13 +232,16 @@ function vr_function() {
       } else {
         var result_transcript = results[i][0].transcript;
 
-        if (document.getElementById('checkbox_hiragana').checked && lang == 'ja-JP') {
-          displayResultText(resultToHiragana(result_transcript));
-        } else {
-          displayResultText(result_transcript);
+        if(!getCookie('googtrans')){
+          if (document.getElementById('checkbox_hiragana').checked && lang == 'ja-JP') {
+            displayResultText(resultToHiragana(result_transcript));
+          } else {
+            displayResultText(result_transcript);
+          }
         }
 
         flag_speech = 1;
+        clearTimeoutForClearText();
       }
     }
   }
