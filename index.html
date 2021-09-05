@@ -46,10 +46,10 @@
           <div class="control_header">読み上げの設定：</div>
           <input type="checkbox" class="control_input checkbox-input" id="checkbox_voice">
           <label for="checkbox_voice" class="checkbox-label">読み上げのオン／オフ</label>
-
+          
           <input type="checkbox" class="control_input checkbox-input" id="checkbox_api" 
-          oninput="changeStyle('#speech_for_gcpAPI', 'display', this.checked),changeStyle('#speech_for_browserAPI', 'display', !(this.checked))">
-          <label for="checkbox_api" class="checkbox-label">GCP利用のオン／オフ</label>
+          oninput="changeStyle('#speech_for_gcpAPI', 'display', this.checked),changeStyle('#speech_for_browserAPI', 'display', !(this.checked))"  style="display:none;">
+          <label for="checkbox_api" class="checkbox-label" style="display:none;">GCP利用のオン／オフ</label>
 
           <div class="control_voice_wrapper control_wrapper" id="speech_for_gcpAPI" style="display: none;">
             <div class="control_form control_form_slider col-3">
@@ -197,7 +197,9 @@
 
             <div class="control_form control_form_slider col-3">
               <label for="slider_text_shadow_stroke" class="control_label">影</label>
-              <input id="slider_text_shadow_stroke" type="range" class="control_input" value="5" min="0" max="20" step="0.1" oninput="document.getElementById('result_text').style.textShadow='0 0 '+this.value+'px '+document.getElementById('selector_text_shadow_color').value,document.getElementById('value_text_shadow_stroke').innerHTML=this.value">
+              <input id="slider_text_shadow_stroke" type="range" class="control_input" value="5" min="0" max="10" step="1" oninput="
+              changeStyle('#result_text', 'textShadow', shadowToOutline(this.value, document.getElementById('selector_text_shadow_color').value)),
+              document.getElementById('value_text_shadow_stroke').innerHTML=this.value">
               <div class="control_value">
                 <span id="value_text_shadow_stroke">5</span><span class="value_unit">px</span>
               </div>
@@ -241,7 +243,8 @@
 
             <div class="control_form control_form_color col-2">
               <label for="selector_text_shadow_color" class="control_label">影色</label>
-              <input id="selector_text_shadow_color" type="color" class="control_input" value="#000000" oninput="document.getElementById('result_text').style.textShadow='0 0 '+document.getElementById('slider_text_shadow_stroke').value+'px '+this.value">
+              <input id="selector_text_shadow_color" type="color" class="control_input" value="#000000" oninput="
+              changeStyle('#result_text', 'textShadow', shadowToOutline(document.getElementById('slider_text_shadow_stroke').value, this.value))">
             </div>
 
             <div class="control_form control_form_selector col-3">

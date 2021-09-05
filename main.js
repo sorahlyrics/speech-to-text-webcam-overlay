@@ -1163,3 +1163,19 @@ function calc_result_minHeight(size, line_spacing, line_bottomup){
   line_bottomup = line_bottomup || document.getElementById('slider_line_bottomup').value;
   return Math.floor(size * (line_spacing / 100) * line_bottomup + 10);
 }
+
+//袋文字をshadowで作る
+//参考：http://css-eblog.com/css3/text-stroke.html
+function shadowToOutline(shadowBold, shadowColor){
+  if(shadowBold == 0){return "";}
+
+  var classArray = [];
+  for (var angle = 0; angle < 360; angle += 5) {
+    classArray.push([ 
+      shadowColor,
+      shadowBold * Math.cos(angle * (Math.PI / 180)) + 'px', 
+      shadowBold * Math.sin(angle * (Math.PI / 180)) + 'px',
+    ].join(" "));
+  }
+  return classArray.join(",");
+}
