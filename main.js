@@ -656,6 +656,8 @@ function googleTranslateElementInit() {
 // 参考: https://www.google.com/intl/ja/chrome/demos/speech.html
 var fonts_custom = [
   ['Noto Sans JP', "'Noto Sans JP', sans-serif"],
+  ['M PLUS 1p', "'M PLUS 1p', 'Noto Sans JP', sans-serif"],
+  ['M PLUS Rounded 1c', "'M PLUS Rounded 1c', 'Noto Sans JP', sans-serif"],
   ['BIZ UD ゴシック（Windows 10）', "'BIZ UDゴシック', 'BIZ UDGothic', 'Noto Sans JP', sans-serif"],
   ['BIZ UD 明朝（Windows 10）', "'BIZ UD明朝', 'BIZ UDMincho', 'Noto Sans JP', sans-serif"],
   ['游ゴシック', "游ゴシック体, 'Yu Gothic', YuGothic, sans-serif"],
