@@ -196,7 +196,7 @@
             </div>
 
             <div class="control_form control_form_slider col-3">
-              <label for="slider_text_shadow_stroke" class="control_label">影</label>
+              <label for="slider_text_shadow_stroke" class="control_label">影フチ</label>
               <input id="slider_text_shadow_stroke" type="range" class="control_input" value="5" min="0" max="10" step="1" oninput="
               changeStyle('#result_text', 'textShadow', shadowToOutline(this.value, document.getElementById('selector_text_shadow_color').value)),
               document.getElementById('value_text_shadow_stroke').innerHTML=this.value">
@@ -205,6 +205,14 @@
               </div>
             </div>
 
+            <div class="control_form control_form_slider col-3">
+              <label for="slider_text_stroke" class="control_label">フチ</label>
+              <input id="slider_text_stroke" type="range" class="control_input" value="0.3" min="0" max="5" step="0.01" oninput="document.getElementById('result_text').style.webkitTextStrokeWidth=this.value+'px',document.getElementById('value_text_stroke').innerHTML=this.value">
+              <div class="control_value">
+                <span id="value_text_stroke">0.3</span><span class="value_unit">px</span>
+              </div>
+            </div>
+            
             <div class="control_form control_form_slider col-3">
               <label for="slider_line_height" class="control_label">行間</label>
               <input id="slider_line_height" type="range" class="control_input" value="163" min="100" max="300" step="1" oninput="
@@ -245,6 +253,11 @@
               <label for="selector_text_shadow_color" class="control_label">影色</label>
               <input id="selector_text_shadow_color" type="color" class="control_input" value="#000000" oninput="
               changeStyle('#result_text', 'textShadow', shadowToOutline(document.getElementById('slider_text_shadow_stroke').value, this.value))">
+            </div>
+
+            <div class="control_form control_form_color col-2">
+              <label for="selector_text_stroke_color" class="control_label">フチ色</label>
+              <input id="selector_text_stroke_color" type="color" class="control_input" value="#000000" oninput="document.getElementById('result_text').style.webkitTextStrokeColor=this.value">
             </div>
 
             <div class="control_form control_form_selector col-3">
@@ -299,7 +312,7 @@
         </div>
 
         <div class="control_button_wrapper">
-          <input type="button" value="カメラ 表示/非表示" id="button_camera_display" onclick="toggleClass('result_video','hidden')">
+          <input type="button" value="カメラ 表示/非表示" id="button_camera_display" onclick="toggleClass('result_video','hidden'), setupCamera()">
           <input type="button" value="カメラ 左右反転" id="button_camera_flip" onclick="toggleClass('result_video','mirror')">
           <input type="button" value="文字 表示/非表示" id="button_text_display" onclick="toggleClass('text_overlay_wrapper','hidden')">
           <input type="button" value="文字 左右反転" id="button_text_flip" onclick="toggleClass('text_overlay_wrapper','mirror')">

@@ -114,10 +114,33 @@ function handleStream(stream) {
   return navigator.mediaDevices.enumerateDevices();
 }
 
+function setStopEvent(stream){
+  window.stopEvent = window.stopEvent || (function(e){
+    const outputWindow = getActiveWindow();
+    if(config['result_video'].hidden){
+      stream.getTracks().forEach(function(track) {
+        track.stop();
+        outputWindow.document.getElementById('result_video').srcObject = null;
+      })
+    }
+  })
+  
+  document.getElementById('button_camera_display').removeEventListener(
+    'click', stopEvent
+  );
+
+  document.getElementById('button_camera_display').addEventListener(
+    'click', stopEvent
+  );
+
+  return stream;
+}
+
 // 設定に基づきカメラ映像を表示
 // isInit : カメラ選択肢がない場合だけtrue、他（選択肢切替時や保存された設定からの復元時）は不要
 // 参考：https://github.com/webrtc/samples/blob/gh-pages/src/content/devices/input-output/js/main.js
 function setupCamera(isInit) {
+  if(config['result_video'] && config['result_video'].hidden){return false;}
   if (window.stream) {
     window.stream.getTracks().forEach(track => {
       track.stop();
@@ -138,6 +161,7 @@ function setupCamera(isInit) {
     } : undefined;
   }
   navigator.mediaDevices.getUserMedia(constraints)
+    .then(setStopEvent)
     .then(handleStream)
     .then(updateCameraSelector)
     .catch(onCameraError);
@@ -701,7 +725,8 @@ function gcpapi_speak(text) {
       "content-type": "application/json; charset=UTF-8"
     },
     body: JSON.stringify(data),
-    method: "POST"
+    method: "POST",
+    referrerPolicy: "no-referrer-when-downgrade"
   }
   fetch(url, otherparam)
     .then(data=>{return data.json()})
