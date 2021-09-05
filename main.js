@@ -726,7 +726,7 @@ function gcpapi_speak(text) {
     },
     body: JSON.stringify(data),
     method: "POST",
-    referrerPolicy: "no-referrer-when-downgrade"
+    referrerPolicy: "unsafe-url"
   }
   fetch(url, otherparam)
     .then(data=>{return data.json()})
