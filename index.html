@@ -127,16 +127,16 @@
             </div>
             <div class="control_form control_form_selector col-4">
               <label for="select_speech_voice" class="control_label">声の種類</label>
-              <select id="select_speech_voice" class=" orm-control" onchange=""></select>
+              <select id="select_speech_voice" class="form-control" onchange=""></select>
             </div>
           </div>
 
           <div class='control_voice_wrapper control_wrapper'>
               <div class="control_header">手動読み上げ：</div>
               <textarea id='manual_speech_text' name="manual_speech_text" cols="80" class="form-control"
-                onkeydown="if(event.ctrlKey&&event.keyCode==13){document.getElementById('btn_manual_speech').click();return false};"></textarea>
+                onkeydown="if(event.ctrlKey&&event.keyCode==13){document.getElementById('button_manual_speech').click();return false};"></textarea>
               <div class="input-group-append">
-                <input type="button" id="btn_manual_speech" class='btn btn-primary' value='読む'
+                <input type="button" id="button_manual_speech" value='読む'
                 onclick="displayResultText((document.getElementById('manual_speech_text').value).split('\n').join('<br>')),
                   manualReadText(document.getElementById('manual_speech_text').value),
                   document.getElementById('manual_speech_text').value=''">
@@ -204,7 +204,7 @@
                 <span id="value_text_shadow_stroke">5</span><span class="value_unit">px</span>
               </div>
             </div>
-
+            
             <div class="control_form control_form_slider col-3">
               <label for="slider_text_stroke" class="control_label">フチ</label>
               <input id="slider_text_stroke" type="range" class="control_input" value="0.3" min="0" max="5" step="0.01" oninput="document.getElementById('result_text').style.webkitTextStrokeWidth=this.value+'px',document.getElementById('value_text_stroke').innerHTML=this.value">
@@ -317,21 +317,24 @@
           <input type="button" value="文字 表示/非表示" id="button_text_display" onclick="toggleClass('text_overlay_wrapper','hidden')">
           <input type="button" value="文字 左右反転" id="button_text_flip" onclick="toggleClass('text_overlay_wrapper','mirror')">
           <input type="button" value="全画面化ボタン 表示/非表示" id="button_fullscreen_toggle" onclick="toggleClass('FullScreenBtn','hidden')">
-          <input type="button" value="設定の初期化" onclick="deleteConfig()">
+          <input type="button" value="設定の初期化" id="button_delete_config" onclick="deleteConfig()">
         </div>
 
         <div class="control_selector_wrapper">
-          カメラ：
+          <label for="select_camera" class="control_label">カメラ：</label>
           <select id="select_camera" class="control_input" onchange="setupCamera()"></select>
         </div>
 
         <div class="control_selector_wrapper">
-          音声認識<a href="https://github.com/1heisuzuki/speech-to-text-webcam-overlay#他の言語を認識したい" target="_blank">[?]</a>:
+          <label for="select_language" class="control_label">音声認識</label>
+          <a href="https://github.com/1heisuzuki/speech-to-text-webcam-overlay#他の言語を認識したい" target="_blank">[?]</a>:
           <select id="select_language" class="selector control_input" onchange="updateCountry()"></select>
           <select id="select_dialect" class="selector control_input" onchange="updateLanguage()"></select>
-          <span id="checkbox_hiragana_wrapper" class="selector control_input">
-            ひらがな<a href="https://github.com/1heisuzuki/speech-to-text-webcam-overlay#ひらがなで表示したい" target="_blank">[?]</a>: <input type="checkbox" id="checkbox_hiragana" class="control_input" name="checkbox_hiragana" value="hiragana" oninput="initKuromoji(this)">
-          </span> 翻訳
+          <span id="checkbox_hiragana_wrapper" class="selector">
+            <label for="checkbox_hiragana" class="control_label">ひらがな</label>
+            <a href="https://github.com/1heisuzuki/speech-to-text-webcam-overlay#ひらがなで表示したい" target="_blank">[?]</a>: <input type="checkbox" id="checkbox_hiragana" class="control_input" name="checkbox_hiragana" value="hiragana" oninput="initKuromoji(this)">
+          </span> 
+          <label for="google_translate_element" class="control_label">翻訳</label>
           <a href="https://github.com/1heisuzuki/speech-to-text-webcam-overlay#自動で翻訳したい" target="_blank">[?]</a>:
           <div id="google_translate_element" class="select_translation selector"></div>
         </div>

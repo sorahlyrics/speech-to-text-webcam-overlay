@@ -201,14 +201,12 @@ a:link, a:visited, a:hover, a:active {
   	display: none;
 	flex-wrap: wrap;
 	margin-bottom: 2rem;
-	opacity: 0.6;
 	text-align: left;
 }
 
 .checkboxes {
-    display: inline-block;
-    margin: 6px;
-	opacity: 0.8;
+  display: inline-block;
+  margin: 6px;
 }
 
 .checkboxes_label {
@@ -521,3 +519,28 @@ select {
 	margin: 3px;
 	line-height: 100%;
   }
+
+.control_input:not(input[type="color"]),
+#select_speech_voice,
+#select_speech_language,
+#google_translate_element,
+#button_subWindow,
+#button_camera_display,
+#button_camera_flip,
+#button_text_display,
+#button_text_flip,
+#button_fullscreen_toggle,
+#button_delete_config,
+#button_manual_speech
+{
+	opacity: 0.6;
+}
+
+.control_label,
+.checkbox-label,
+.control_header,
+.control_value,
+.control_form_text p
+{
+	color: #999;
+}
