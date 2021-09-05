@@ -1155,3 +1155,11 @@ function windowPopup(subWindowX, subWindowY){
   }
 }
 //ポップアップウィンドウ表示　ここまで
+
+//下からn行目に表示する際の高さ計算
+function calc_result_minHeight(size, line_spacing, line_bottomup){
+  size = size == 1 ? 0 : size || document.getElementById('slider_font_size').value;
+  line_spacing = line_spacing || document.getElementById('slider_line_height').value;
+  line_bottomup = line_bottomup || document.getElementById('slider_line_bottomup').value;
+  return Math.floor(size * (line_spacing / 100) * line_bottomup + 10);
+}
